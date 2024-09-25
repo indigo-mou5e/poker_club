@@ -1,0 +1,7 @@
+*.cfg
+profile/
+ghost/master/messagetxt/*.bak
+etc/tama.txt
+updates2.dau
+updates.txt
+surfaceTables/

@@ -1,0 +1,122 @@
+charset,Shift_JIS
+
+descript
+{
+	version,1
+}
+
+
+
+// ベース
+surface0-2
+{
+	element0,base,surface5001.png,0,0
+	element1,overlay,surface5002.png,0,0
+	element2,overlay,surface0.png,0,0
+}
+
+surface3-5
+{
+	element0,base,surface5004.png,0,0
+	element1,overlay,surface5005.png,0,0
+	element2,overlay,surface5003.png,0,0
+}
+
+surface6-8
+{
+	element0,base,surface5007.png,0,0
+	element1,overlay,surface5008.png,0,0
+	element2,overlay,surface5006.png,0,0
+}
+
+surface0-8
+{
+collisionex0,lhand,polygon,123,417,86,428,73,444,65,465,65,478,65,491,89,498,111,498,137,490,140,474,168,446,168,426,151,409
+collisionex1,hair,polygon,51,100,55,121,47,144,54,156,74,150,85,151,112,149,131,139,137,132,146,140,151,150,167,148,172,138,170,109,148,95,83,91,61,91
+collisionex2,hood,polygon,55,100,60,88,98,88,127,94,150,98,171,104,174,117,175,148,170,171,165,188,181,169,196,126,206,101,191,70,176,49,170,31,144,26,111,30,80,49,60,66,53,76
+}
+
+surface0-2
+{
+collisionex3,face,polygon,100,152,112,165,119,165,133,170,145,164,153,147,143,138,136,131
+}
+
+surface3-5
+{
+collisionex3,rhand,polygon,108,254,98,248,90,215,99,184,113,178,133,176,149,176,153,204,141,234,130,252
+collisionex4,face,polygon,100,152,112,165,119,165,133,170,145,164,153,147,143,138,136,131
+}
+
+surface6-8
+{
+collisionex3,rhand,polygon,21,245,67,215,70,191,68,163,36,153,10,185,9,228
+collisionex4,face,polygon,100,152,112,165,119,165,133,170,145,164,153,147,143,138,136,131
+}
+
+
+
+//3000口
+//4000感情
+//5000髪・パーカー
+
+
+// 表情設定
+// 
+
+surface0,3,6
+{
+	element3,overlay,surface3000.png,0,0
+}
+
+surface1
+{
+	element3,overlay,surface3001.png,0,0
+}
+
+surface2
+{
+	element3,overlay,surface3002.png,0,0
+}
+
+surface4
+{
+	element3,overlay,surface3003.png,0,0
+}
+
+surface5
+{
+	element3,overlay,surface3004.png,0,0
+}
+
+surface7
+{
+	element3,overlay,surface3005.png,0,0
+}
+
+surface8
+{
+	element3,overlay,surface3006.png,0,0
+}
+
+
+surface6
+{
+	element4,overlay,surface4000.png,0,0
+}
+
+surface7
+{
+	element4,overlay,surface4001.png,0,0
+}
+
+
+surface10
+{
+	element0,base,surface0010.png,0,0
+}
+
+surface11
+{
+	element0,base,surface0011.png,0,0
+}
+

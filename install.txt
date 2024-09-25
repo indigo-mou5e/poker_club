@@ -1,0 +1,4 @@
+charset,UTF-8
+type,ghost
+name,第三高校ポーカークラブ
+directory,poker_club

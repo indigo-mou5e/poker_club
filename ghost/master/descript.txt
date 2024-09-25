@@ -1,0 +1,17 @@
+charset,UTF-8
+
+name,第三高校ポーカークラブ
+type,ghost
+
+sakura.name,碧
+kero.name,マック朗
+
+sstp.allowunspecifiedsend,1
+
+icon,icon.ico
+
+shiori,yaya.dll
+
+craftman,seibihan
+craftmanw,整備班
+craftmanurl,http://ms.shillest.net/yayame.xhtml
