@@ -74,21 +74,6 @@ OnChoiceSelect
 	}
 }
 
-OnAnchorSelect
-{
-	if RE_SEARCH(reference[0],'^(http|https)://') {
-		if basewarename == 'SSP' {
-			'\C'
-		}
-		--
-		"\j[%(AYATEMPLATE.EscapeText(reference[0]))]"
-	}
-	else {
-		if ISFUNC(reference[0]) {
-			EVAL(reference[0])
-		}
-	}
-}
 
 //------------------------------------------------------------------------------
 //メニュー横1行反転
