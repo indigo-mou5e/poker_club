@@ -2,6 +2,9 @@
 // アンカー辞書
 //******************************************************************************
 
+#define DIC_INDEX -1
+#define DIC_DESCRIPT -2
+#define DIC_COMMENT -3
 
 //------------------------------------------------------------------------------
 // きほん
@@ -18,23 +21,119 @@ OnAnchorSelect
 	}
 	else {
 		if ISFUNC(reference[0]) {
-			'\C\1\c'
-			--
 			EVAL(reference[0])
 		}
 	}
+}
+
+OnAnchorSelectEx
+{
+	if reference[1] == "AnchorDictionary"{
+		// reference[2]が整数のとき
+		if GETTYPE(reference[2]) == 1{
+			temp_anchorDicindex = reference[2]
+
+			AnchorDicToKeroText
+		}
+	}
+}
+
+AnchorDicToKeroText
+{
+	'\C\1\c'
+	--
+	TOSTR(EVAL(CHR(0x22)+AnchorDic_Raw(temp_anchorDicindex, DIC_INDEX)+CHR(0x22)))
+	--
+	'\n\n[half]'
+	--
+	Anchor_Translate(TOSTR(EVAL(CHR(0x22)+AnchorDic_Raw(temp_anchorDicindex, DIC_DESCRIPT)+CHR(0x22))))
+	--
+	'\n\n[half]\_q\_a[AnchorDicToAoiComment]葵のコメントを聞く\_a\_q\e'
+}
+
+AnchorDicToAoiComment
+{
+	'\C\0\c'
+	--
+	TOSTR(EVAL(CHR(0x22)+AnchorDic_Raw(temp_anchorDicindex, DIC_INDEX)+CHR(0x22)))
+	--
+	'\n\n[half]'
+	--
+	Anchor_Translate(TOSTR(EVAL(CHR(0x22)+AnchorDic_Raw(temp_anchorDicindex, DIC_COMMENT)+CHR(0x22))))
+	--
+	'\e'
 }
 
 //------------------------------------------------------------------------------
 // 
 //------------------------------------------------------------------------------
 
-AN_Limp{
-	"【リンプ】【リンプイン】\n\n[half]/
-	プリフロップにおいて、BBの参加費に対してレイズせず、コールで参加すること。\e"
+AnchorDic_Raw
+{
+	case _argv[0]{
+		/*
+		when "ANC_単語"{
+			case _argv[1]{
+				when DIC_INDEX{
+					'見出し'
+				}
+				when DIC_DESCRIPT{
+					'kero側が行う解説'
+				}
+				when DIC_COMMENT{
+					'sakura側が語る解説'
+				}
+			}
+		}
+		*/
+		when INDEX_LIMP{
+			case _argv[1]{
+				when DIC_INDEX{
+					'【リンプ】【リンプイン】'
+				}
+				when DIC_DESCRIPT{
+					'プリフロップにおいて、BBの参加費に対してレイズせず、コールで参加すること。'
+				}
+				when DIC_COMMENT{
+					'唾棄すべき悪癖。/
+					………と見せかけて、使えるタイミングがないわけでもない難しめの戦略だね。/
+					すごく利益が出るわけでもないから、無理して使う必要もないけれど。'
+				}
+			}
+		}
+		when INDEX_PREFLOP{
+			case _argv[1]{
+				when DIC_INDEX{
+					'【プリフロップ】'
+				}
+				when DIC_DESCRIPT{
+					'最初のストリート。/
+					各プレイヤーにカードが2枚配られているが、ボードにはまだカードが開かれていない状態。'
+				}
+				when DIC_COMMENT{
+					'基本的には覚えるだけの簡単なストリート。/
+					とは言っても、覚える量はとっても多いんだけど。'
+				}
+			}
+		}
+		when INDEX_FLOP{
+			case _argv[1]{
+				when DIC_INDEX{
+					'【フロップ】'
+				}
+				when DIC_DESCRIPT{
+					'プリフロップの次のストリート。ボードにカードが３枚開かれている状態。'
+				}
+				when DIC_COMMENT{
+					'プリフロップのハンドの強さが一変するストリート。/
+					滑ったAKはただのAハイになり、トリップスになった67sはとても強い手になる。/
+					フロップでどれだけ自分のハンドの強さを適切に見積もれるかが大事だね。'
+				}
+			}
+		}
+	}
 }
 
-AN_Prefrop{
-	"【プリフロップ】\n\n[half]/
-	各プレイヤーにカードが2枚配られているが、ボードにはまだカードが開かれていない状態。\e"
+AncLimp{
+
 }

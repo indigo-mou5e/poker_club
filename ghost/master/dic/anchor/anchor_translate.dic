@@ -1,6 +1,31 @@
 //******************************************************************************
-// アンカーへの自動リンク
+// 辞書の引数としての定数（もどき）
 //******************************************************************************
 
-#globaldefine リンプ \_a[AN_Limp]リンプ\_a
-#globaldefine プリフロップ \_a[AN_Prefrop]プリフロップ\_a
+#globaldefine INDEX_LIMP 1000
+#globaldefine INDEX_PREFLOP 1001
+#globaldefine INDEX_FLOP 1002
+
+//******************************************************************************
+// アンカーの変換
+//******************************************************************************
+
+Anchor_Translate
+{
+    _text = _argv[0]
+    _text = REPLACE(_text, 'リンプ', '\_a[AnchorDictionary,INDEX_LIMP]【リンプ】\_a')
+    _text = REPLACE(_text, 'プリフロップ', '\_a[AnchorDictionary,INDEX_PREFLOP]【プリフ★ロップ】\_a')
+    _text = REPLACE(_text, 'フロップ', '\_a[AnchorDictionary,INDEX_FLOP]【フロップ】\_a')
+
+    // 別のアンカー単語を含む単語のサーチ除けを解除
+    _text = REPLACE(_text, 'プリフ★ロップ', 'プリフロップ')
+
+    // 括弧が不要な場合は削除
+    if isNoBracketAnchor{
+        _text = REPLACE(_text, '【', '')
+        _text = REPLACE(_text, '】', '')
+    }
+
+    // 返り値
+    _text
+}

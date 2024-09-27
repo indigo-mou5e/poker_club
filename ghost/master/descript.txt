@@ -3,7 +3,7 @@ charset,UTF-8
 name,第三高校ポーカークラブ
 type,ghost
 
-sakura.name,碧
+sakura.name,葵
 kero.name,マック朗
 
 sstp.allowunspecifiedsend,1
