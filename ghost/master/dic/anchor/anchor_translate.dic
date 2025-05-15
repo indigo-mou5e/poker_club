@@ -13,12 +13,10 @@
 Anchor_Translate
 {
     _text = _argv[0]
-    _text = REPLACE(_text, 'リンプ', '\_a[AnchorDictionary,INDEX_LIMP]【リンプ】\_a')
-    _text = REPLACE(_text, 'プリフロップ', '\_a[AnchorDictionary,INDEX_PREFLOP]【プリフ★ロップ】\_a')
-    _text = REPLACE(_text, 'フロップ', '\_a[AnchorDictionary,INDEX_FLOP]【フロップ】\_a')
+    _text = REPLACE(_text, '【リンプ】', '\_a[AnchorDictionary,INDEX_LIMP]【リンプ】\_a')
+    _text = REPLACE(_text, '【プリフロップ】', '\_a[AnchorDictionary,INDEX_PREFLOP]【プリフロップ】\_a')
+    _text = REPLACE(_text, '【フロップ】', '\_a[AnchorDictionary,INDEX_FLOP]【フロップ】\_a')
 
-    // 別のアンカー単語を含む単語のサーチ除けを解除
-    _text = REPLACE(_text, 'プリフ★ロップ', 'プリフロップ')
 
     // 括弧が不要な場合は削除
     if isNoBracketAnchor{

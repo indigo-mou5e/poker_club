@@ -72,8 +72,40 @@ OnChoiceSelect
 	if ISFUNC(reference[0]) {
 		EVAL(reference[0])
 	}
+	else{
+		"\1（選択肢のジャンプ先「%(reference[0])」が存在しません）\e"
+	}
 }
 
+OnChoiceSelectEx
+{
+	if ISFUNC(reference[1])
+	{
+		temp_ChoiseExRef = reference[2]
+		EVAL(reference[1])
+	}
+	else{
+		"\1（選択肢のジャンプ先「%(reference[1])」が存在しません）\e"
+	}
+}
+
+OnUserInput{
+	if reference[1] == ''{
+		OnUserInputCancel()
+		return
+	}
+
+	if ISFUNC(reference[0]){
+		temp_InputText = reference[1]
+		EVAL(reference[0])
+	}
+}
+
+OnUserInputCancel{
+	Init
+	--
+	'\0\c\1\c\2\c\e'
+}
 
 //------------------------------------------------------------------------------
 //メニュー横1行反転
@@ -107,7 +139,7 @@ AYATEMPLATE.MenuItem
 	--
 	'\![*]\q['
 	--
-	AYATEMPLATE.EscapeText( SHIORI3FW.MakeJustText(_argv[0],46) )
+	AYATEMPLATE.EscapeText(_argv[0])
 	--
 	_s = ''
 	for _i = 1 ; _i < _n ; _i++ {

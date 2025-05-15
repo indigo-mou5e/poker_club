@@ -33,7 +33,7 @@ OpenMenu
 	--
 	AYATEMPLATE.MenuItem("ややめに話しかける","Menu_COMMUNICATEOPEN")
 	--
-	AYATEMPLATE.MenuItem('トークテスト','PresentForGhost')
+	AYATEMPLATE.MenuItem('ポーカーをやる','PokerMenu')
 	--
 	//スタンプ帳チェック
 	if AYATEMPLATE.IsPluginExist('379E0DA0-131C-11DD-E1AC-90009E101CFE') {
@@ -41,27 +41,6 @@ OpenMenu
 	}
 	--
 	AYATEMPLATE.MenuItem("なんでもない","Menu_CANCEL",150)
-}
-
-
-// YAYAでの記述
-PresentForGhost
-{
-	好感度++
-
-	'\0\s[5]ユーザーさんからプレゼントをもらったよ！/
-	\1\s[10]よかったねえ。\e'
-}
-
-
-//------------------------------------------------------------------------------
-//メニュー選択タイムアウト
-//------------------------------------------------------------------------------
-OnChoiceTimeout
-{
-	'\0\s[7]ちゃんと選んでくださいっ！\e'
-	'\0\s[4]ぷー。\w8\1落ち込むんじゃない。\e'
-	'\0\s[4]一定時間が過ぎると。\w8\1キャンセルされるんだよな？\w8\0\n\n自爆します。\w8\1\s[11]\n\nえ！？\w8\0\n\nマック朗が。\w8\1\n\nいや―――――――ッ！！\e'
 }
 
 

@@ -1,0 +1,163 @@
+//******************************************************************************
+// ミニゲーム
+// トランプの基本操作周り
+//******************************************************************************
+
+#define ORIGINAL_DECK (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51)
+#define CARD_FONT '\f[name,メイリオ]'
+#define SUIT_COLOR_ARRAY ('\f[color,default]','\f[color,#12b240]','\f[color,#3e69f1]','\f[color,#dc0006]')
+#define SUIT_STR_ARRAY ('♠','♣','♦','♥')
+// ポーカーのランクの都合上、2～Aの順に割り当てしていることに注意
+#define RANK_ARRAY ('２','３','４','５','６','７','８','９','10','Ｊ','Ｑ','Ｋ','Ａ')
+#define DEFAULT_FONT '\f[name,default]\f[color,default]'
+
+// 指定の数だけランダムにトランプを引き、indexの汎用配列にして返す
+// 引数0（整数）：引くカードの枚数
+GetRandomCardArray
+{
+    _cardArray = IARRAY
+    _deck = ORIGINAL_DECK
+
+    _cardCount = 0
+
+    if _argc > 0 && _argv[0] <= 52
+        _cardCount = _argv[0]
+
+    for _i = 0; _i < _cardCount; _i++
+    {
+        // 0 ～ (残り枚数-1)の整数をランダムで取得
+        _rand = RAND((52 - _i))
+
+        // _cardArray に追加し、 _deck からは削除する
+        _cardArray ,= _deck[_rand]
+        _deck[_rand] = IARRAY
+    }
+
+    // return
+    _cardArray
+}
+
+// カードの番号を対応した文字列にして返す（ex. 5 → '♠７', (14, 16) → ('♣３', '♣５')）
+// 整数単体の入力、汎用配列の入力両方に対応
+// 引数0（整数 or 整数の汎用配列）:入力するindex 
+CardIndexToString
+{
+    if _argc == 1{
+        _rank = _argv[0] % 13
+        _suit = _argv[0] / 13
+
+        CARD_FONT + SUIT_COLOR_ARRAY[_suit] + RANK_ARRAY[_rank] + SUIT_STR_ARRAY[_suit] + DEFAULT_FONT
+    }
+    else{
+        /* // 配列で返す旧バージョン
+        _strArray = IARRAY
+
+        foreach _argv; _i {
+            _rank = _i % 13
+            _suit = _i / 13
+
+            _strArray ,= SUIT_COLOR_ARRAY[_suit] + RANK_ARRAY[_rank] + SUIT_STR_ARRAY[_suit] + DEFAULT_FONT
+        }
+
+        _strArray
+        */
+
+        _str = CARD_FONT
+
+        foreach _argv; _i {
+            _rank = _i % 13
+            _suit = _i / 13
+
+            _str += SUIT_COLOR_ARRAY[_suit] + RANK_ARRAY[_rank] + SUIT_STR_ARRAY[_suit]
+        }
+
+        _str += DEFAULT_FONT
+
+        _str
+    }
+}
+
+// おまけ。文字列配列を任意の区切り文字列で区切りながら結合する。
+// 引数0（文字列）: 区切りの文字列
+// 引数1以降（文字列配列）: 文字列配列
+StrArrayToString
+{
+    _sep = _argv[0]
+
+    _string = ''
+
+    if _argc > 1 
+        _string = _argv[1]
+
+    for _i = 2; _i < _argc; _i++ {
+        _string += _sep + _argv[_i]
+    }
+
+    _string
+}
+
+
+Debug_RandomCardTest
+{
+	Init
+	--
+	'\1カードをランダムで引くよ。\n何枚引く？\n\n[half]'
+	--
+	'\q[2枚,DrawRandomCard_2]\n'
+	--
+	'\q[5枚,DrawRandomCard_5]\n'
+	--
+	'\q[30枚,DrawRandomCard_30]\n\n[half]'
+	--
+	'\q[やっぱりやめる,Menu_Close]'
+}
+
+DrawRandomCard_2
+{
+	_cards = GetRandomCardArray(2)
+	_cardStrArray = CardIndexToString(_cards)
+	_cardsStr = StrArrayToString('',_cardStrArray)
+
+	Init
+	--
+	'\1カードを2枚引いたよ。\n\n[half]'
+	--
+	'カードは' + _cardsStr + '。\n'
+	--
+	'評価値は' + LookUpHandTier_Yuri(_cards) + 'ってところね。\n\n[half]'
+	--
+	'\q[もう一回,DrawRandomCard_2]\n'
+	--
+	'\q[メニューへ,SuzuMenuList]'
+}
+
+DrawRandomCard_5
+{
+	_cards = GetRandomCardArray(5)
+	_cardStrArray = CardIndexToString(_cards)
+	_cardsStr = StrArrayToString(' ',_cardStrArray)
+
+	Init
+	--
+	'\1カードを5枚引いたよ。\n\n[half]'
+	--
+	_cardsStr + '\e'
+}
+
+DrawRandomCard_30
+{
+	_cards = GetRandomCardArray(30)
+	_cardStrArray = CardIndexToString(_cards)
+	_cardStrArray_0 = _cardStrArray[0,7]
+	_cardStrArray_1 = _cardStrArray[8,15]
+	_cardStrArray_2 = _cardStrArray[16,23]
+	_cardStrArray_3 = _cardStrArray[24,29]
+	_cardsStr = StrArrayToString(' ',_cardStrArray_0) + '\n' + StrArrayToString(' ',_cardStrArray_1) + '\n' + /
+	StrArrayToString(' ',_cardStrArray_2) + '\n' + StrArrayToString(' ',_cardStrArray_3)
+
+	Init
+	--
+	'\1カードを30枚引いたよ。\n\n[half]'
+	--
+	_cardsStr + '\e'
+}

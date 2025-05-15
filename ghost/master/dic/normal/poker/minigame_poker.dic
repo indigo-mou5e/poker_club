@@ -1,0 +1,413 @@
+//******************************************************************************
+// ミニゲーム
+// かんたんテキサスホールデム
+//******************************************************************************
+
+#define ROYAL_FLUSH 9
+#define STRAIGHT_FLUSH 8
+#define FOUR_OF_A_KIND 7
+#define FULL_HOUSE 6
+#define FLUSH 5
+#define STRAIGHT 4
+#define THREE_OF_A_KIND 3
+#define TWO_PAIR 2
+#define ONE_PAIR 1
+#define HIGH_CARD 0
+
+#define WIN_USER 0
+#define WIN_YURI 1
+#define WIN_CHOP 2
+
+// ポーカーのランクの都合上、2～Aの順に割り当てしていることに注意
+#define RANK_ARRAY ('２','３','４','５','６','７','８','９','10','Ｊ','Ｑ','Ｋ','Ａ')
+
+PokerMenu
+{
+    '\0ポーカー、やる？'
+    --
+    '\w9\_q\n\n　　---- テキサスホールデム ----\n/
+    \q[三人で遊ぶ,StartPoker,3]\n\n[half]/
+    \q[説明を聞く,HowToPlayPoker]\n'
+    --
+    '\n\q[やっぱりやめる,QuitPoker]\_q'
+}
+
+HowToPlayPoker
+{
+    '\0ここはポーカーのルールを教えるところなんだけど。\n\n[half]/
+    ……まだ、何もないみたい。\e'
+}
+
+QuitPoker
+{
+    '\0ポーカー終了。\nシステム、通常モードに移行します。'
+}
+
+StartPoker
+{
+    temp_playerCount = temp_ChoiseExRef
+    _cards = GetRandomCardArray(5 + temp_playerCount * 2)
+    temp_boardCards = _cards[0,4]
+    temp_playersCards = _cards[5, 4 + temp_playerCount * 2]
+
+    _userHand = GetPlayerHand(0)
+    _aoiHand = GetPlayerHand(1)
+    _thirdPlayerHand = GetPlayerHand(2)
+
+    "\0僕の手札は%(CardIndexToString(_aoiHand))、\n/
+    %(username)のハンドは%(CardIndexToString(_userHand))、\n/
+    マック朗のハンドは%(CardIndexToString(_thirdPlayerHand))だね。\x"
+    --
+    _userHandRank = CalculateHandRank(temp_boardCards, _userHand)
+    _aoiHandRank = CalculateHandRank(temp_boardCards, _aoiHand)
+    _thirdHandRank = CalculateHandRank(temp_boardCards, _thirdPlayerHand)
+    _handRankValues = GetHandRanksInt()
+    _winners = GetWinners(_handRankValues)
+
+    "\0ボードは【%(CardIndexToString(temp_boardCards))】。\n\n[half]/
+    %(username)のハンドは【%(CardIndexToString(_userHand))】。\n/
+    僕のハンドは【%(CardIndexToString(_aoiHand))】、\nマック朗のハンドは【%(CardIndexToString(_thirdPlayerHand))】だよ。\n\n/
+    %(username)の役は%(HandRankToString(_userHandRank))だね。\n/
+    僕の役は%(HandRankToString(_aoiHandRank))、\nマック朗の役は%(HandRankToString(_thirdHandRank))。\n\n[half]"
+    --
+    if ARRAYSIZE(_winners) >= 2{
+        "引き分けみたい。"
+    }
+    else{
+        case _winners[0]{
+            when 0{
+                "%(username)の勝ちだよ。"
+            }
+            when 1{
+                '僕の勝ちだね。'
+            }
+            when 2{
+                'マック朗の勝ちだね。'
+            }
+        }
+    }
+    --
+    "\n\n\_q\q[もう一回やる,StartPoker,3]\n\q[もうやめる,QuitPoker]\_q"
+}
+
+GetPlayerHand{
+    _hand = temp_playersCards[_argv[0] * 2, _argv[0] * 2 + 1]
+
+    _hand
+}
+
+Prefrop
+{
+    
+}
+
+// 場のカードと手札のカードを渡すと、その中から作れる最強の役を返す
+// 引数（汎用配列）：場や手札のカード。最大枚数は7枚の想定で書いている部分があるので、8以上の要素を渡さないこと。
+// 返り値は汎用配列。要素0に役の種類、要素1～5に役の強さ比較用の数値が入る
+CalculateHandRank
+{
+    _rankCount = (0,0,0,0,0,0,0,0,0,0,0,0,0)
+    _suitCount = (0,0,0,0)
+    _handRank = (0,0,0,0,0,0)
+
+    foreach _argv; _i{
+        _rank = _i % 13
+        _suit = _i / 13
+        _rankCount[_rank]++
+        _suitCount[_suit]++
+    }
+
+    // 4,3,2,1枚あるカードの数字を強い順に並べた配列
+    _quadsArray = IARRAY
+    _tripsArray = IARRAY
+    _pairArray = IARRAY
+    _soloArray = IARRAY
+
+    for _ik = 4; _ik >= 1; _ik--{
+        for _ir = 12; _ir >= 0; _ir--{
+            if _rankCount[_ir] == _ik{
+                case _ik{
+                    when 4
+                        _quadsArray ,= _ir
+                    when 3
+                        _tripsArray ,= _ir
+                    when 2
+                        _pairArray ,= _ir 
+                    when 1
+                        _soloArray ,= _ir
+                }
+            }
+        }
+    }
+
+    // ---- 以下、役の判定 ----
+
+    // フォーカード判定
+    // （ストレートフラッシュの方が強いので先に判定すべきだが、7枚までではフォーカードとストレートフラッシュは両立しないので、こちらを先に判定している）
+    if ARRAYSIZE(_quadsArray) != 0{
+        _kicker = 0
+        for _i = 12; _i >= 0; _i--{
+            if _rankCount[_i] > 0 && _rankCount[_i] != 4{
+                _kicker = _i
+                break
+            } 
+        }
+
+        _handRank = (FOUR_OF_A_KIND, _quadsArray[0], _kicker,0,0,0)
+
+        _handRank
+        return
+    }
+
+    // フルハウス判定
+    // （フルハウスとストレートフラッシュも7枚では両立しない）
+    if ARRAYSIZE(_tripsArray) > 1{
+        _handRank = (FULL_HOUSE, _tripsArray[0], _tripsArray[1],0,0,0)
+
+        _handRank
+        return
+    }
+    elseif ARRAYSIZE(_tripsArray) == 1 && ARRAYSIZE(_pairArray) > 0{
+        _handRank = (FULL_HOUSE, _tripsArray[0], _pairArray[0],0,0,0)
+
+        _handRank
+        return
+    }
+
+    // フラッシュ、ストレートフラッシュ判定
+    for _is = 0; _is < 4; _is++{
+        if _suitCount[_is] > 4{
+            _suitRankCount = (0,0,0,0,0,0,0,0,0,0,0,0,0)
+
+            foreach _argv; _ic{
+                if _ic / 13 == _is{
+                    _rank = _ic % 13
+                    _suitRankCount[_rank]++
+                }
+            }
+
+            _isStraight = JudgeStraight(_suitRankCount)
+
+            if _isStraight != 0{
+                if _isStraight == 12{
+                    _handRank = (ROYAL_FLUSH, 12,0,0,0,0)
+                }
+                else{
+                    _handRank = (STRAIGHT_FLUSH, _isStraight,0,0,0,0)
+                }
+            }
+            else{
+                _handRank = (IARRAY, FLUSH)
+
+                _count = 0
+
+                for _ir = 12; _ir >= 0; _ir--{
+                    if _suitRankCount[_ir] != 0{
+                        _handRank ,= _ir
+                        _count++
+
+                        if count == 5{
+                            break
+                        }
+                    }
+                }
+            }
+
+            _handRank
+            return
+        }
+    }
+    
+    // ストレート判定
+    _isStraight = JudgeStraight(_rankCount)
+    if _isStraight != 0{
+        _handRank = (STRAIGHT, _isStraight,0,0,0,0)
+
+        _handRank
+        return
+    }
+
+    // スリーカード判定
+    if ARRAYSIZE(_tripsArray) > 0{
+        _handRank = (THREE_OF_A_KIND, _tripsArray[0], _soloArray[0], _soloArray[1],0,0)
+        
+        _handRank
+        return
+    }
+
+    // ツーペア判定
+    if ARRAYSIZE(_pairArray) > 1{
+        _kicker = _soloArray[0]
+
+        if ARRAYSIZE(_pairArray) > 2{
+            if _pairArray[2] > _soloArray[0]{
+                _kicker = _pairArray[2]
+            }
+        }
+
+        _handRank = (TWO_PAIR, _pairArray[0], _pairArray[1], _kicker,0,0)
+
+        _handRank
+        return
+    }
+
+    // ワンペア判定
+    if ARRAYSIZE(_pairArray) == 1{
+        _handRank = (ONE_PAIR, _pairArray[0], _soloArray[0], _soloArray[1], _soloArray[2],0)
+
+        _handRank
+        return
+    }
+
+    // 上記のいずれにも該当しない場合、ハイカード
+    _handRank = (HIGH_CARD, _soloArray[0], _soloArray[1], _soloArray[2], _soloArray[3], _soloArray[4])
+
+    _handRank
+    return
+}
+
+// それぞれの数字の枚数が入った配列を渡すと、それでストレートができるかを判定して返す。
+// 引数（大きさ13の汎用配列）： 2～Aのカードがそれぞれ何枚あるかをまとめた配列
+// 返り値： ストレートができる場合、ストレートのハイカード。できない場合、0。
+JudgeStraight
+{
+    _straghtCounter = 0
+    for _i = 12; _i >= 0; _i--{
+        if _argv[_i] == 0{
+            _straghtCounter = 0
+        }
+        else{
+            _straghtCounter++
+
+            if _straghtCounter == 5{
+                _i + 4
+                return
+            }
+        }
+    }
+
+    // A～5のストレート判定
+    if _straghtCounter == 4 && _argv[12] > 0{
+        3
+        return
+    }
+
+    0
+}
+
+// CalculateHandRank で計算した Handrank を文字列に変換する
+HandRankToString
+{
+    case _argv[0]{
+        when ROYAL_FLUSH
+            'ロイヤルストレートフラッシュ'
+
+        when STRAIGHT_FLUSH
+            RANK_ARRAY[((_argv[1] + 9)% 13)] + '～' + RANK_ARRAY[_argv[1]] + 'のストレートフラッシュ'
+
+        when FOUR_OF_A_KIND
+            RANK_ARRAY[_argv[1]] + 'のフォーカード'
+
+        when FULL_HOUSE
+            RANK_ARRAY[_argv[1]] + 'と' + RANK_ARRAY[_argv[2]] + 'のフルハウス'
+        
+        when FLUSH
+            RANK_ARRAY[_argv[1]] + 'ハイフラッシュ'
+
+        when STRAIGHT
+            RANK_ARRAY[((_argv[1] + 9)% 13)] + '～' + RANK_ARRAY[_argv[1]] + 'のストレート'
+
+        when THREE_OF_A_KIND
+            RANK_ARRAY[_argv[1]] + 'のスリーカード'
+
+        when TWO_PAIR
+            RANK_ARRAY[_argv[1]] + 'と' + RANK_ARRAY[_argv[2]] + 'のツーペア'
+
+        when ONE_PAIR
+            RANK_ARRAY[_argv[1]] + 'のワンペア'
+        
+        others
+            RANK_ARRAY[_argv[1]] + 'のハイカード'
+    }
+}
+
+GetHandRanksInt
+// どのプレイヤーが勝ちかを判定して返す
+// 0: ユーザ、1: 葵、2以降: 他の参加者。
+// チョップの場合含め、勝者全員が配列として返される。
+{
+    _handRanksInt = IARRAY
+
+    for _i = 0; _i < temp_playerCount; _i++{
+        _hand = GetPlayerHand(_i)
+        _handRank = CalculateHandRank(temp_boardCards, _hand)
+
+        _handRanksInt ,= _handRank[0] * 537824 + _handRank[1] * 38416  + _handRank[2] * 2744 + _handRank[3] * 196 + _handRank[4] * 14 + _handRank[5]
+    }
+
+    _handRanksInt
+}
+
+GetWinners{
+    _winners = (IARRAY, 0)
+    _handRanksInt = _argv
+
+    _maxRankPlayer = 0
+    for _i = 1; _i < temp_playerCount; _i++{
+        if _handRanksInt[_i] > _handRanksInt[_maxRankPlayer]{
+            _winners = (IARRAY, _i)
+            _maxRankPlayer = _i
+        }
+        elseif _handRanksInt[_i] == _handRanksInt[_maxRankPlayer]{
+            _winners ,= _i
+        }
+    }
+
+    _winners
+}
+
+// 悠梨の手札評価表。
+// 引数0、引数1（整数）: 二枚のカード( index )
+LookUpHandTier_Yuri
+{
+    _index = 0
+    _largeRank = 0
+    _smallRank = 0
+
+    _handTierTable = /
+    //    A   K   Q   J   10  9   8   7   6   5   4   3   2     右上はスーテッド、左下はオフスート
+/* A  */(333,222,170,150,138,122,114,105,101,103,101,100, 99,/
+/* K  */ 190,280,142,128,114,104, 93, 87, 84, 81, 79, 78, 78,/
+/* Q  */ 138,115,240,113,100, 82, 82, 76, 70, 69, 68, 67, 67,/
+/* J  */ 118,101, 88,215,109, 93, 73, 57, 47, 46, 45, 45, 44,/
+/* 10 */ 106, 87, 75, 85,180,106, 79, 56, 42, 41, 40, 40, 39,/
+/* 9  */  90, 77, 67, 69, 82,155, 86, 62, 48, 37, 33, 32, 32,/
+/* 8  */  82, 66, 57, 49, 55, 63,134, 71, 53, 36, 31, 26, 25,/
+/* 7  */  73, 60, 51, 33, 32, 39, 48,123, 59, 47, 35, 29, 22,/
+/* 6  */  69, 57, 45, 23, 18, 25, 30, 37,111, 51, 45, 29, 26,/
+/* 5  */  71, 54, 44, 22, 17, 14, 13, 25, 29,103, 44, 28, 26,/
+/* 4  */  69, 52, 43, 21, 16, 10,  8, 12, 23, 22, 97, 28, 25,/
+/* 3  */  68, 51, 42, 21, 16,  9,  3,  7,  7,  6,  6, 94, 25,/
+/* 2  */  67, 51, 42, 20, 15,  9,  2,  0,  4,  4,  3,  3, 92)
+    
+    _suit_0 = _argv[0] / 13
+    _rank_0 = _argv[0] % 13
+    _suit_1 = _argv[1] / 13
+    _rank_1 = _argv[1] % 13
+
+    if _rank_0 > _rank_1{
+        _largeRank = 12 - _rank_0
+        _smallRank = 12 - _rank_1
+    }
+    else{
+        _largeRank = 12 - _rank_1
+        _smallRank = 12 - _rank_0
+    }
+
+    if _suit_0 == _suit_1
+        _index = _largeRank * 13 + _smallRank
+    else
+        _index = _smallRank * 13 + _largeRank
+
+    _handTierTable[_index]
+}
