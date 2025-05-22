@@ -1,6 +1,6 @@
 charset,UTF-8
 
-name,第三高校ポーカークラブ
+name,Welcome To Poker Club!
 type,ghost
 
 sakura.name,葵
@@ -12,6 +12,6 @@ icon,icon.ico
 
 shiori,yaya.dll
 
-craftman,seibihan
-craftmanw,整備班
-craftmanurl,http://ms.shillest.net/yayame.xhtml
+craftman,suminezu
+craftmanw,墨鼠
+craftmanurl,https://prayfortiny.net

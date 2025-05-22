@@ -18,3 +18,15 @@ ResetVariable : void
 {
     
 }
+
+// 引数0を引数1回数分繰り返した配列を返す。
+GetConstantArray
+{
+    _array = IARRAY
+
+    for _i = 0; _i < _argv[1]; _i++{
+        _array ,= _argv[0]
+    }
+
+    _array
+}

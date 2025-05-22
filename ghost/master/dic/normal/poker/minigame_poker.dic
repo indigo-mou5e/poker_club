@@ -14,9 +14,24 @@
 #define ONE_PAIR 1
 #define HIGH_CARD 0
 
-#define WIN_USER 0
-#define WIN_YURI 1
-#define WIN_CHOP 2
+#define STR_PREFROP 7700
+#define STR_FROP 7701
+#define STR_TURN 7702
+#define STR_RIVER 7703
+#define STR_SHOWDOWN 7704 
+
+#define ACT_CHECK 7800
+#define ACT_SMALL_BET 7810
+#define ACT_HALF_BET 7811
+#define ACT_BIG_BET 7812
+#define ACT_CALL 7820
+#define ACT_SMALL_RAISE 7830
+#define ACT_HALF_RAISE 7831
+#define ACT_BIG_RAISE 7832
+#define ACT_FOLD 7840
+
+#define SMALL_BLIND 1
+#define BIG_BLIND 2
 
 // ポーカーのランクの都合上、2～Aの順に割り当てしていることに注意
 #define RANK_ARRAY ('２','３','４','５','６','７','８','９','10','Ｊ','Ｑ','Ｋ','Ａ')
@@ -26,7 +41,7 @@ PokerMenu
     '\0ポーカー、やる？'
     --
     '\w9\_q\n\n　　---- テキサスホールデム ----\n/
-    \q[三人で遊ぶ,StartPoker,3]\n\n[half]/
+    \q[三人で遊ぶ,StartPoker,2]\n\n[half]/
     \q[説明を聞く,HowToPlayPoker]\n'
     --
     '\n\q[やっぱりやめる,QuitPoker]\_q'
@@ -44,6 +59,485 @@ QuitPoker
 }
 
 StartPoker
+{
+    temp_playerCount = temp_ChoiseExRef
+    _cards = GetRandomCardArray(5 + temp_playerCount * 2)
+    temp_boardCards = _cards[0,4]
+    temp_playersCards = _cards[5, 4 + temp_playerCount * 2]
+    temp_isPlayingArray = GetConstantArray(1, temp_playerCount)
+    temp_betArray = GetConstantArray(0, temp_playerCount)
+    temp_btn = 0
+    temp_isAround = 0
+    temp_pot = 0
+
+    stackArray = GetConstantArray(200, temp_playerCount)
+
+    Prefrop
+}
+
+NextHand{
+    _cards = GetRandomCardArray(5 + temp_playerCount * 2)
+    temp_boardCards = _cards[0,4]
+    temp_playersCards = _cards[5, 4 + temp_playerCount * 2]
+    temp_isPlayingArray = GetConstantArray(1, temp_playerCount)
+    temp_betArray = GetConstantArray(0, temp_playerCount)
+    temp_btn++
+    if temp_btn == temp_playerCount{
+        temp_btn = 0
+    }
+    temp_isAround = 0
+    temp_pot = 0
+
+    Prefrop
+}
+
+Prefrop
+{
+    temp_maxBet = BIG_BLIND
+    temp_street = STR_PREFROP
+    if temp_btn >= temp_playerCount{
+        temp_btn %= temp_playerCount
+    }
+
+    if temp_playerCount == 2{
+        temp_betArray[temp_btn] = SMALL_BLIND
+        stackArray[temp_btn] -= SMALL_BLIND
+
+        temp_betArray[(temp_btn + 1) % temp_playerCount] = BIG_BLIND
+        stackArray[(temp_btn + 1) % temp_playerCount] -= BIG_BLIND
+
+        temp_action = temp_btn
+    }
+    else{
+        temp_betArray[(temp_btn + 1) % temp_playerCount] = SMALL_BLIND
+        stackArray[(temp_btn + 1) % temp_playerCount] -= SMALL_BLIND
+
+        temp_betArray[(temp_btn + 2) % temp_playerCount] = BIG_BLIND
+        stackArray[(temp_btn + 2) % temp_playerCount] -= BIG_BLIND
+
+        temp_action = (temp_btn + 2) % temp_playerCount
+    }
+
+    Action
+}
+
+Action{
+    _isOption = 0
+
+    // チェックのまま全員アクションしたら次のストリートへ
+    if temp_maxBet == 0{
+        if temp_isAround{
+            NextStreet
+            return
+        }
+    }
+    // アクションが回ってきた時点で最高賭け額が自分の賭け額と同じだったときは次のストリートへ
+    elseif temp_betArray[temp_action] == temp_maxBet {
+        // プリフロップかつ、BBにリンプで回ってきたときは例外的にオプション
+        if temp_street == STR_PREFROP && temp_maxBet == BIG_BLIND{
+            // 今アクションがBBか（ボタンとの相対位置が人数によって変わるので条件分岐）
+            if temp_playerCount == 2 && temp_action != temp_btn{
+                _isOption = 1
+            }
+            elseif temp_playerCount > 2 && temp_action == (temp_btn + 2) % temp_playerCount{
+                _isOption = 1
+            }
+            else{
+                NextStreet
+                return
+            }
+        }
+        // 次のストリートへ
+        else{
+            NextStreet
+            return
+        }
+    }
+
+    _smallBet = 0
+    _halfBet = 0
+    _bigBet = 0
+
+    // BBにリンプで回ってきたとき
+    if _isOption{
+        _smallBet = BIG_BLIND * 5 / 2
+        _halfBet = BIG_BLIND * 3
+        _bigBet = BIG_BLIND * 4
+    }
+    // そのストリートでまだベットがされてないとき
+    elseif temp_maxBet == 0{
+        _smallBet = temp_pot * 3 / 10
+        _halfBet = temp_pot / 2
+        _bigBet = temp_pot * 8 / 10
+    }
+    // ベットされているとき（レイズ額）
+    else{
+        _smallBet = temp_maxBet * 5 / 2
+        _halfBet = temp_maxBet * 3
+        _bigBet = temp_maxBet * 4
+    }
+
+    _userHand = GetPlayerHand(0)
+
+    // ユーザのアクションのとき
+    if temp_action == 0{
+        "\1\_q\c【%(GetStreetStr)】\n"
+        --
+        case temp_street{
+            when STR_FROP{
+                "ボード：%(CardIndexToString(temp_boardCards[0,2]))\n"
+            }
+            when STR_TURN{
+                "ボード：%(CardIndexToString(temp_boardCards[0,3]))\n"
+            }
+            when STR_RIVER{
+                "ボード：%(CardIndexToString(temp_boardCards[0,4]))\n"
+            }
+        }
+        --
+        "ユーザのハンド：%(CardIndexToString(_userHand))\n/
+        スタック：(%(stackArray[0]), %(stackArray[1]))\n/
+        ポット：%(temp_pot)\n/
+        コール額：%(temp_maxBet)\_q"
+        --
+        if _isOption{
+            AYATEMPLATE.MenuItem("チェック","Action_Check")
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_smallBet)","Action_Raise", _smallBet, 100)
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_halfBet)","Action_Raise", _halfBet, 100)
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_bigBet)","Action_Raise", _bigBet, 100)
+        }
+        elseif temp_maxBet == 0{ 
+            AYATEMPLATE.MenuItem("チェック","Action_Check")
+            --
+            AYATEMPLATE.MenuItem("ベット：%(_smallBet)","Action_Bet", _smallBet, 100)
+            --
+            AYATEMPLATE.MenuItem("ベット：%(_halfBet)","Action_Bet", _halfBet, 100)
+            --
+            AYATEMPLATE.MenuItem("ベット：%(_bigBet)","Action_Bet", _bigBet, 100)
+        }
+        else{
+            AYATEMPLATE.MenuItem('コール', 'Action_Call')
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_smallBet)","Action_Raise", _smallBet, 100)
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_halfBet)","Action_Raise", _halfBet, 100)
+            --
+            AYATEMPLATE.MenuItem("レイズ：%(_bigBet)","Action_Raise", _bigBet, 100)
+            --
+            AYATEMPLATE.MenuItem('フォールド', 'Action_Fold')
+        }
+    }
+    // ユーザ以外のアクションのとき
+    else{
+        _cpuAction = 0
+
+        // CPUの思考はここ（現在は完全にランダムでアクションを決めている）
+        // ToDo: 戦略AIを作る
+        _rand = RAND(10)
+        if _isOption{
+            if _rand < 2{
+                _cpuAction = ACT_HALF_RAISE
+            }
+            else{
+                _cpuAction = ACT_CHECK
+            }
+        }
+        elseif temp_maxBet == 0{
+            case _rand{
+                when 0{
+                    _cpuAction = ACT_SMALL_BET
+                }
+                when 1,2,3{
+                    _cpuAction = ACT_HALF_BET
+                }
+                when 4{
+                    _cpuAction = ACT_BIG_BET
+                }
+                others{
+                    _cpuAction = ACT_CHECK
+                }
+            }
+        }
+        else{
+            case _rand{
+                when 0{
+                    _cpuAction = ACT_HALF_RAISE
+                }
+                when 1-6{
+                    _cpuAction = ACT_CALL
+                }
+                others{
+                    _cpuAction = ACT_FOLD
+                }
+            }
+        }
+        
+        "\1\_q\c【%(GetStreetStr)】\n"
+        --
+        case temp_street{
+            when STR_FROP{
+                "ボード：%(CardIndexToString(temp_boardCards[0,2]))\n"
+            }
+            when STR_TURN{
+                "ボード：%(CardIndexToString(temp_boardCards[0,3]))\n"
+            }
+            when STR_RIVER{
+                "ボード：%(CardIndexToString(temp_boardCards[0,4]))\n"
+            }
+        }
+        --
+        "ユーザのハンド：%(CardIndexToString(_userHand))\n/
+        スタック：(%(stackArray[0]), %(stackArray[1]))\n/
+        ポット：%(temp_pot)\n/
+        コール額：%(temp_maxBet)\0\_q\w9"
+        --
+        case _cpuAction{
+            when ACT_CHECK{
+                'チェック。'
+                --
+                Action_Check
+            }
+            when ACT_SMALL_BET{
+                '小さめのベット。'
+                --
+                temp_ChoiseExRef = _smallBet
+                Action_Bet
+            }
+            when ACT_HALF_BET{
+                'ベット。'
+                --
+                temp_ChoiseExRef = _halfBet
+                Action_Bet
+            }
+            when ACT_BIG_BET{
+                '大きめのベット。'
+                --
+                temp_ChoiseExRef = _bigBet
+                Action_Bet
+            }
+            when ACT_CALL{
+                'コール。'
+                --
+                Action_Call
+            }
+            when ACT_SMALL_RAISE{
+                '小さめのレイズ。'
+                --
+                temp_ChoiseExRef = _smallBet
+                Action_Raise
+            }
+            when ACT_HALF_RAISE{
+                'レイズ。'
+                --
+                temp_ChoiseExRef = _halfBet
+                Action_Raise
+            }
+            when ACT_BIG_RAISE{
+                '大きめのレイズ。'
+                --
+                temp_ChoiseExRef = _bigBet
+                Action_Raise
+            }
+            others{
+                "フォールドかな。"
+                --
+                Action_Fold
+            }
+        }
+    }
+}
+
+Action_Check{
+    NextAction(1)
+}
+
+Action_Bet{
+    _bet = temp_ChoiseExRef
+    temp_maxBet = _bet
+    stackArray[temp_action] -= temp_maxBet - temp_betArray[temp_action]
+    temp_betArray[temp_action] = _bet
+    
+    NextAction
+}
+
+Action_Call{
+    stackArray[temp_action] -= temp_maxBet - temp_betArray[temp_action]
+    temp_betArray[temp_action] = temp_maxBet
+
+    NextAction
+}
+
+Action_Raise{
+    _bet = temp_ChoiseExRef
+    temp_maxBet = _bet
+    stackArray[temp_action] -= temp_maxBet - temp_betArray[temp_action]
+    temp_betArray[temp_action] = _bet
+
+    NextAction
+}
+
+Action_Fold{
+    temp_isPlayingArray[temp_action] = 0
+
+    _playerLeft = 0
+    _winner = -1
+    _count = 0
+    foreach temp_isPlayingArray; _isPlaying{
+        if _isPlaying{
+            _playerLeft++
+            _winner = _count
+        }
+        _count++
+    }
+
+    if _playerLeft == 1{
+        NoCall(_winner)
+        return
+    }
+
+    NextAction
+}
+
+NextAction{
+    _isCheck = _argv[0]
+
+    if temp_action == temp_btn && _isCheck{
+        temp_isAround = 1
+    }
+    temp_action++
+    if temp_action == temp_playerCount{
+        temp_action = 0
+    }
+
+    while !temp_isPlayingArray[temp_action]{
+        if temp_action == temp_btn && _isCheck{
+            temp_isAround = 1
+        }
+        
+        temp_action++
+        if temp_action == temp_playerCount{
+            temp_action = 0
+        }
+    }
+
+    Action
+}
+
+NextStreet{
+    foreach temp_betArray; _bet{
+        temp_pot += _bet
+    }
+    temp_betArray = GetConstantArray(0, temp_playerCount)
+
+    case temp_street{
+        when STR_PREFROP{
+            temp_street = STR_FROP
+            'フロップ。\x'
+        }
+        when STR_FROP{
+            temp_street = STR_TURN
+            'ターン。\x'
+        }
+        when STR_TURN{
+            temp_street = STR_RIVER
+            'リバー。\x'
+        }
+        when STR_RIVER{
+            temp_street = STR_SHOWDOWN
+            'じゃ、ショウダウンしようか。\x'
+            --
+            Showdown
+            return
+        }
+    }
+    temp_maxBet = 0
+    temp_isAround = 0
+
+    temp_action = temp_btn
+
+    --
+    NextAction
+}
+
+Showdown{
+    _userHand = GetPlayerHand(0)
+    _aoiHand = GetPlayerHand(1)
+    
+    _handRankValues = GetHandRanksInt()
+    _winners = GetWinners(_handRankValues)
+
+    "\1\_q【%(GetStreetStr)】\n/
+    ボード：%(CardIndexToString(temp_boardCards[0,4]))\n/
+    ユーザのハンド：%(CardIndexToString(_userHand))\n/
+    スタック：(%(stackArray[0]), %(stackArray[1]))\n/
+    ポット：%(temp_pot)\_q"
+    --
+    "\0僕の手札は%(CardIndexToString(_aoiHand))、\n/
+    %(username)のハンドは%(CardIndexToString(_userHand))だね。\n\n[half]"
+    --
+
+    if ARRAYSIZE(_winners) >= 2{
+        PotToWinner_Chop(_winners)
+        "引き分けみたい。"
+    }
+    else{
+        PotToWinner(_winners)
+        case _winners[0]{
+            when 0{
+                "%(username)の勝ちだよ。"
+            }
+            when 1{
+                '僕の勝ちだね。'
+            }
+        }
+    }
+    --
+    "\1\n\n[half]スタック：(%(stackArray[0]), %(stackArray[1]))\n\n\_q\q[もう一回やる,NextHand]\n\q[もうやめる,QuitPoker]\_q"
+}
+
+NoCall{
+    _winner = _argv[0]
+    PotToWinner(_winner)
+    'ノーコール。\n\n[half]'
+    --
+    case _winner{
+        when 0{
+            "%(username)の勝ちだよ。"
+        }
+        when 1{
+            '僕の勝ちだね。'
+        }
+    }
+    --
+    "\_q\1スタック：(%(stackArray[0]), %(stackArray[1]))\n\n\q[もう一回やる,NextHand]\n\q[もうやめる,QuitPoker]\_q"
+}
+
+PotToWinner{
+    _winner = _argv[0]
+
+    foreach temp_betArray; _bet{
+        temp_pot += _bet
+    }
+    temp_betArray = GetConstantArray(0, temp_playerCount)
+    
+    stackArray[_winner] += temp_pot
+}
+
+PotToWinner_Chop{
+    foreach temp_betArray; _bet{
+        temp_pot += _bet
+    }
+    temp_betArray = GetConstantArray(0, temp_playerCount)
+
+    foreach _argv; _winner{
+        stackArray[_winner] += temp_pot / _argc
+    }
+}
+
+TestPoker
 {
     temp_playerCount = temp_ChoiseExRef
     _cards = GetRandomCardArray(5 + temp_playerCount * 2)
@@ -87,18 +581,33 @@ StartPoker
         }
     }
     --
-    "\n\n\_q\q[もう一回やる,StartPoker,3]\n\q[もうやめる,QuitPoker]\_q"
+    "\n\n\_q\q[もう一回やる,TestPoker,3]\n\q[もうやめる,QuitPoker]\_q"
+}
+
+GetStreetStr{
+    case temp_street{
+        when STR_PREFROP{
+            'プリフロップ'
+        }
+        when STR_FROP{
+            'フロップ'
+        }
+        when STR_TURN{
+            'ターン'
+        }
+        when STR_RIVER{
+            'リバー'
+        }
+        when STR_SHOWDOWN{
+            'ショウダウン'
+        }
+    }
 }
 
 GetPlayerHand{
     _hand = temp_playersCards[_argv[0] * 2, _argv[0] * 2 + 1]
 
     _hand
-}
-
-Prefrop
-{
-    
 }
 
 // 場のカードと手札のカードを渡すと、その中から作れる最強の役を返す
@@ -331,10 +840,8 @@ HandRankToString
     }
 }
 
+// それぞれのプレイヤーの役の強さを整数値にしたものの配列を取得する
 GetHandRanksInt
-// どのプレイヤーが勝ちかを判定して返す
-// 0: ユーザ、1: 葵、2以降: 他の参加者。
-// チョップの場合含め、勝者全員が配列として返される。
 {
     _handRanksInt = IARRAY
 
@@ -348,6 +855,9 @@ GetHandRanksInt
     _handRanksInt
 }
 
+// どのプレイヤーが勝ちかを判定して返す
+// 0: ユーザ、1: 葵、2以降: 他の参加者。
+// チョップの場合含め、勝者全員が配列として返される。
 GetWinners{
     _winners = (IARRAY, 0)
     _handRanksInt = _argv
