@@ -11,6 +11,97 @@
 #define RANK_ARRAY ('２','３','４','５','６','７','８','９','10','Ｊ','Ｑ','Ｋ','Ａ')
 #define DEFAULT_FONT '\f[name,default]\f[color,default]'
 
+DisplayCard
+{
+    _card = _argv[0]
+    _placeID = _argv[1]
+
+    if _card < 0{
+        "\![bind,裏面,%(_placeID),1]"
+    }
+    else{
+        _x = 0
+        _y = 0
+
+        case _placeID{
+            when 80{
+                _x = 290
+                _y = 165
+            }
+            when 81{
+                _x = 338
+                _y = 165
+            }
+            when 82{
+                _x = 386
+                _y = 165
+            }
+            when 83{
+                _x = 434
+                _y = 165
+            }
+            when 84{
+                _x = 482
+                _y = 165
+            }
+            when 90{
+                _x = 143
+                _y = 291
+            }
+            when 91{
+                _x = 191
+                _y = 291
+            }
+            when 92{
+                _x = 177
+                _y = 55
+            }
+            when 93{
+                _x = 225
+                _y = 55
+            }
+            when 94{
+                _x = 552
+                _y = 55
+            }
+            when 95{
+                _x = 600
+                _y = 55
+            }
+            when 96{
+                _x = 538
+                _y = 291
+            }
+            when 97{
+                _x = 586
+                _y = 291
+            }
+            when 98{
+                _x = 363
+                _y = 313
+            }
+            when 99{
+                _x = 411
+                _y = 313
+            }
+        }
+
+        "\![bind,裏面,%(_placeID),0]\![bind,表面,%(_card),1]\![anim,offset,%(_card),%(_x),%(_y)]"
+    }
+}
+
+ClearCard
+{
+    _card = _argv[0]
+
+    if _card < 80{
+        "\![bind,表面,%(_card),0]"
+    }
+    else{
+        "\![bind,裏面,%(_card),0]"
+    }
+}
+
 // 指定の数だけランダムにトランプを引き、indexの汎用配列にして返す
 // 引数0（整数）：引くカードの枚数
 GetRandomCardArray
@@ -97,6 +188,7 @@ StrArrayToString
 }
 
 
+/*
 Debug_RandomCardTest
 {
 	Init
@@ -161,3 +253,4 @@ DrawRandomCard_30
 	--
 	_cardsStr + '\e'
 }
+*/

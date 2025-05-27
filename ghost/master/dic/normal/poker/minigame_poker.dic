@@ -118,7 +118,151 @@ Prefrop
         temp_action = (temp_btn + 2) % temp_playerCount
     }
 
+    DisplayPrefropCards
+    --
     Action
+}
+
+DisplayPrefropCards
+{
+    _SeatArray = IARRAY
+    case temp_playerCount{
+        when 2{
+            _SeatArray = (90,96)
+        }
+        when 3{
+            _SeatArray = (90,96,98)
+        }
+        when 4{
+            _SeatArray = (90,92,94,96)
+        }
+        when 5{
+            _SeatArray = (90,92,94,96,98)
+        }
+    }
+
+    // 全てのカードを除去
+    '\_q\u\s[1100]\![bind,表面,,0]\![bind,裏面,,0]'
+    --
+    // プレイヤーのカード1枚め
+    DisplayCard(temp_playersCards[0], 90)
+    --
+    // プレイヤーのカード2枚め
+    DisplayCard(temp_playersCards[1], 91)
+    --
+    for _i = 1; _i < temp_playerCount; _i++{
+        DisplayCard(-1, _SeatArray[_i])
+        --
+        DisplayCard(-1, _SeatArray[_i] + 1)
+    }
+    --
+    '\h\_q'
+}
+
+DisplayFropCards{
+    '\_q\u'
+    --
+    DisplayCard(temp_boardCards[0], 80)
+    --
+    DisplayCard(temp_boardCards[1], 81)
+    --
+    DisplayCard(temp_boardCards[2], 82)
+    --
+    '\h\_q'
+}
+
+DisplayTurnCard{
+    '\_q\u'
+    --
+    DisplayCard(temp_boardCards[3], 83)
+    --
+    '\h\_q'
+}
+
+DisplayRiverCard{
+    '\_q\u'
+    --
+    DisplayCard(temp_boardCards[4], 84)
+    --
+    '\h\_q'
+}
+
+MuckCards{
+    _playerID = _argv[0]
+
+    '\_q\u'
+    --
+    if _playerID == 0{
+        ClearCard(temp_playersCards[0])
+        --
+        ClearCard(temp_playersCards[1])
+    }
+    else{
+        _seatID = 0
+        case temp_playerCount{
+            when 2{
+                _SeatArray = (90,96)
+                _seatID = _SeatArray[_playerID]
+            }
+            when 3{
+                _SeatArray = (90,96,98)
+                _seatID = _SeatArray[_playerID]
+            }
+            when 4{
+                _SeatArray = (90,92,94,96)
+                _seatID = _SeatArray[_playerID]
+            }
+            when 5{
+                _SeatArray = (90,92,94,96,98)
+                _seatID = _SeatArray[_playerID]
+            }
+        }
+
+        ClearCard(_seatID)
+        --
+        _seatID++
+        ClearCard(_seatID)
+    }
+    --
+    '\h\_q'
+}
+
+DisplayShowdownCards
+{
+    _playersArray = _argv
+    _SeatArray = IARRAY
+    case temp_playerCount{
+        when 2{
+            _SeatArray = (90,96)
+        }
+        when 3{
+            _SeatArray = (90,96,98)
+        }
+        when 4{
+            _SeatArray = (90,92,94,96)
+        }
+        when 5{
+            _SeatArray = (90,92,94,96,98)
+        }
+    }
+
+    '\_q\u'
+    --
+    foreach _playersArray; _playerID{
+        if _playerID != 0{
+            _seatID = _SeatArray[_playerID]
+            ClearCard(_seatID)
+            --
+            DisplayCard(temp_playersCards[_playerID * 2],_seatID)
+            --
+            _seatID++
+            ClearCard(_seatID)
+            --
+            DisplayCard(temp_playersCards[_playerID * 2 + 1],_seatID)
+        }
+    }
+    --
+    '\h\_q'
 }
 
 Action{
@@ -435,19 +579,31 @@ NextStreet{
     case temp_street{
         when STR_PREFROP{
             temp_street = STR_FROP
+
             'フロップ。\x'
+            --
+            DisplayFropCards
         }
         when STR_FROP{
             temp_street = STR_TURN
+
             'ターン。\x'
+            --
+            DisplayTurnCard
         }
         when STR_TURN{
             temp_street = STR_RIVER
+
             'リバー。\x'
+            --
+            DisplayRiverCard
         }
         when STR_RIVER{
             temp_street = STR_SHOWDOWN
+
             'じゃ、ショウダウンしようか。\x'
+            --
+            DisplayShowdownCards
             --
             Showdown
             return

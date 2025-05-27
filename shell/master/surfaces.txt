@@ -112,6 +112,16 @@ surface7
 
 surface10
 {
+	element0,base,surface0010.png,0,0
+}
+
+surface11
+{
+	element0,base,surface0011.png,0,0
+}
+
+surface1100
+{
 	element0,base,surface1100.png,0,0
 	animation0.interval,bind
 	animation0.pattern0,add,1000,0,0,0
@@ -153,7 +163,7 @@ surface10
 	animation18.pattern0,add,1018,0,0,0
 	animation19.interval,bind
 	animation19.pattern0,add,1019,0,0,0
-	animation10.interval,bind
+	animation20.interval,bind
 	animation20.pattern0,add,1020,0,0,0
 	animation21.interval,bind
 	animation21.pattern0,add,1021,0,0,0
@@ -236,49 +246,9 @@ surface10
 	animation93.interval,bind
 	animation93.pattern0,add,1099,0,225,55
 	animation94.interval,bind
-	animation94.pattern0,add,1099,0,600,55
+	animation94.pattern0,add,1099,0,552,55
 	animation95.interval,bind
-	animation95.pattern0,add,1099,0,552,55
-	animation96.interval,bind
-	animation96.pattern0,add,1099,0,538,291
-	animation97.interval,bind
-	animation97.pattern0,add,1099,0,586,291
-	animation98.interval,bind
-	animation98.pattern0,add,1099,0,363,313
-	animation99.interval,bind
-	animation99.pattern0,add,1099,0,411,313
-}
-
-surface11
-{
-	element0,base,surface0011.png,0,0
-}
-
-surface1100
-{
-	element0,base,surface1100.png,0,0
-	animation80.interval,bind
-	animation80.pattern0,add,1099,0,290,165
-	animation81.interval,bind
-	animation81.pattern0,add,1099,0,338,165
-	animation82.interval,bind
-	animation82.pattern0,add,1099,0,386,165
-	animation83.interval,bind
-	animation83.pattern0,add,1099,0,434,165
-	animation84.interval,bind
-	animation84.pattern0,add,1099,0,482,165
-	animation90.interval,bind
-	animation90.pattern0,add,1099,0,143,291
-	animation91.interval,bind
-	animation91.pattern0,add,1099,0,191,291
-	animation92.interval,bind
-	animation92.pattern0,add,1099,0,177,55
-	animation93.interval,bind
-	animation93.pattern0,add,1099,0,225,55
-	animation94.interval,bind
-	animation94.pattern0,add,1099,0,600,55
-	animation95.interval,bind
-	animation95.pattern0,add,1099,0,552,55
+	animation95.pattern0,add,1099,0,600,55
 	animation96.interval,bind
 	animation96.pattern0,add,1099,0,538,291
 	animation97.interval,bind
