@@ -60,6 +60,17 @@ kero.bindgroup49.name,表面,49,
 kero.bindgroup50.name,表面,50,
 kero.bindgroup51.name,表面,51,
 
+kero.bindgroup70.name,アクション,FOLD,
+kero.bindgroup71.name,アクション,CHECK,
+kero.bindgroup72.name,アクション,sBET,
+kero.bindgroup73.name,アクション,hBET,
+kero.bindgroup74.name,アクション,bBET,
+kero.bindgroup75.name,アクション,ALLIN,
+kero.bindgroup76.name,アクション,CALL,
+kero.bindgroup77.name,アクション,sRAISE,
+kero.bindgroup78.name,アクション,hRAISE,
+kero.bindgroup79.name,アクション,bRAISE,
+
 kero.bindgroup80.name,裏面,80,
 kero.bindgroup81.name,裏面,81,
 kero.bindgroup82.name,裏面,82,
@@ -78,7 +89,9 @@ kero.bindgroup99.name,裏面,99,
 
 kero.bindoption0.group,裏面,multiple
 kero.bindoption1.group,表面,multiple
+kero.bindoption2.group,アクション,multiple
 
+kero.seriko.alignmenttodesktop,free
 
 sstp.allowunspecifiedsend,1
 

@@ -229,7 +229,6 @@ MuckCards{
 
 DisplayShowdownCards
 {
-    _playersArray = _argv
     _SeatArray = IARRAY
     case temp_playerCount{
         when 2{
@@ -248,8 +247,8 @@ DisplayShowdownCards
 
     '\_q\u'
     --
-    foreach _playersArray; _playerID{
-        if _playerID != 0{
+    for _playerID = 1; _playerID < temp_playerCount;_playerID++{
+        if temp_isPlayingArray[_playerID]{
             _seatID = _SeatArray[_playerID]
             ClearCard(_seatID)
             --
@@ -266,7 +265,7 @@ DisplayShowdownCards
 }
 
 Action{
-    _isOption = 0
+    temp_isOption = 0
 
     // チェックのまま全員アクションしたら次のストリートへ
     if temp_maxBet == 0{
@@ -281,10 +280,10 @@ Action{
         if temp_street == STR_PREFROP && temp_maxBet == BIG_BLIND{
             // 今アクションがBBか（ボタンとの相対位置が人数によって変わるので条件分岐）
             if temp_playerCount == 2 && temp_action != temp_btn{
-                _isOption = 1
+                temp_isOption = 1
             }
             elseif temp_playerCount > 2 && temp_action == (temp_btn + 2) % temp_playerCount{
-                _isOption = 1
+                temp_isOption = 1
             }
             else{
                 NextStreet
@@ -298,27 +297,23 @@ Action{
         }
     }
 
-    _smallBet = 0
-    _halfBet = 0
-    _bigBet = 0
-
     // BBにリンプで回ってきたとき
-    if _isOption{
-        _smallBet = BIG_BLIND * 5 / 2
-        _halfBet = BIG_BLIND * 3
-        _bigBet = BIG_BLIND * 4
+    if temp_isOption{
+        temp_smallBet = BIG_BLIND * 5 / 2
+        temp_halfBet = BIG_BLIND * 3
+        temp_bigBet = BIG_BLIND * 4
     }
     // そのストリートでまだベットがされてないとき
     elseif temp_maxBet == 0{
-        _smallBet = temp_pot * 3 / 10
-        _halfBet = temp_pot / 2
-        _bigBet = temp_pot * 8 / 10
+        temp_smallBet = temp_pot * 3 / 10
+        temp_halfBet = temp_pot / 2
+        temp_bigBet = temp_pot * 8 / 10
     }
     // ベットされているとき（レイズ額）
     else{
-        _smallBet = temp_maxBet * 5 / 2
-        _halfBet = temp_maxBet * 3
-        _bigBet = temp_maxBet * 4
+        temp_smallBet = temp_maxBet * 5 / 2
+        temp_halfBet = temp_maxBet * 3
+        temp_bigBet = temp_maxBet * 4
     }
 
     _userHand = GetPlayerHand(0)
@@ -344,35 +339,61 @@ Action{
         ポット：%(temp_pot)\n/
         コール額：%(temp_maxBet)\_q"
         --
-        if _isOption{
+        if temp_isOption{
+            '\![bind,アクション,CHECK,1]/
+            \![bind,アクション,sRAISE,1]/
+            \![bind,アクション,hRAISE,1]/
+            \![bind,アクション,bRAISE,1]/
+            \![bind,アクション,ALLIN,1]'
+        }
+        elseif temp_maxBet == 0{ 
+            '\![bind,アクション,CHECK,1]/
+            \![bind,アクション,sBET,1]/
+            \![bind,アクション,hBET,1]/
+            \![bind,アクション,bBET,1]/
+            \![bind,アクション,ALLIN,1]'
+        }
+        else{
+            '\![bind,アクション,FOLD,1]/
+            \![bind,アクション,CALL,1]/
+            \![bind,アクション,sRAISE,1]/
+            \![bind,アクション,hRAISE,1]/
+            \![bind,アクション,bRAISE,1]/
+            \![bind,アクション,ALLIN,1]'
+        }
+        --
+        "\_q"
+        /*
+        if temp_isOption{
             AYATEMPLATE.MenuItem("チェック","Action_Check")
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_smallBet)","Action_Raise", _smallBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_smallBet)","Action_Raise", temp_smallBet, 100)
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_halfBet)","Action_Raise", _halfBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_halfBet)","Action_Raise", temp_halfBet, 100)
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_bigBet)","Action_Raise", _bigBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_bigBet)","Action_Raise", temp_bigBet, 100)
         }
         elseif temp_maxBet == 0{ 
             AYATEMPLATE.MenuItem("チェック","Action_Check")
             --
-            AYATEMPLATE.MenuItem("ベット：%(_smallBet)","Action_Bet", _smallBet, 100)
+            AYATEMPLATE.MenuItem("ベット：%(temp_smallBet)","Action_Bet", temp_smallBet, 100)
             --
-            AYATEMPLATE.MenuItem("ベット：%(_halfBet)","Action_Bet", _halfBet, 100)
+            AYATEMPLATE.MenuItem("ベット：%(temp_halfBet)","Action_Bet", temp_halfBet, 100)
             --
-            AYATEMPLATE.MenuItem("ベット：%(_bigBet)","Action_Bet", _bigBet, 100)
+            AYATEMPLATE.MenuItem("ベット：%(temp_bigBet)","Action_Bet", temp_bigBet, 100)
         }
         else{
             AYATEMPLATE.MenuItem('コール', 'Action_Call')
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_smallBet)","Action_Raise", _smallBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_smallBet)","Action_Raise", temp_smallBet, 100)
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_halfBet)","Action_Raise", _halfBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_halfBet)","Action_Raise", temp_halfBet, 100)
             --
-            AYATEMPLATE.MenuItem("レイズ：%(_bigBet)","Action_Raise", _bigBet, 100)
+            AYATEMPLATE.MenuItem("レイズ：%(temp_bigBet)","Action_Raise", temp_bigBet, 100)
             --
             AYATEMPLATE.MenuItem('フォールド', 'Action_Fold')
         }
+        */
     }
     // ユーザ以外のアクションのとき
     else{
@@ -381,7 +402,7 @@ Action{
         // CPUの思考はここ（現在は完全にランダムでアクションを決めている）
         // ToDo: 戦略AIを作る
         _rand = RAND(10)
-        if _isOption{
+        if temp_isOption{
             if _rand < 2{
                 _cpuAction = ACT_HALF_RAISE
             }
@@ -447,19 +468,19 @@ Action{
             when ACT_SMALL_BET{
                 '小さめのベット。'
                 --
-                temp_ChoiseExRef = _smallBet
+                temp_ChoiseExRef = temp_smallBet
                 Action_Bet
             }
             when ACT_HALF_BET{
                 'ベット。'
                 --
-                temp_ChoiseExRef = _halfBet
+                temp_ChoiseExRef = temp_halfBet
                 Action_Bet
             }
             when ACT_BIG_BET{
                 '大きめのベット。'
                 --
-                temp_ChoiseExRef = _bigBet
+                temp_ChoiseExRef = temp_bigBet
                 Action_Bet
             }
             when ACT_CALL{
@@ -470,19 +491,19 @@ Action{
             when ACT_SMALL_RAISE{
                 '小さめのレイズ。'
                 --
-                temp_ChoiseExRef = _smallBet
+                temp_ChoiseExRef = temp_smallBet
                 Action_Raise
             }
             when ACT_HALF_RAISE{
                 'レイズ。'
                 --
-                temp_ChoiseExRef = _halfBet
+                temp_ChoiseExRef = temp_halfBet
                 Action_Raise
             }
             when ACT_BIG_RAISE{
                 '大きめのレイズ。'
                 --
-                temp_ChoiseExRef = _bigBet
+                temp_ChoiseExRef = temp_bigBet
                 Action_Raise
             }
             others{
@@ -521,6 +542,12 @@ Action_Raise{
     temp_betArray[temp_action] = _bet
 
     NextAction
+}
+
+Action_AllIn{
+    // 一時的にベットの一部とする
+    temp_ChoiseExRef = stackArray[temp_action]
+    Action_Bet
 }
 
 Action_Fold{

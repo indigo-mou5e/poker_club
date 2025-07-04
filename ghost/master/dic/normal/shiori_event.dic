@@ -19,6 +19,63 @@ OnBalloonTimeout
 }
 
 //------------------------------------------------------------------------------
+// OnMouseClick
+//------------------------------------------------------------------------------
+
+OnMouseClick
+{
+	if reference3 == 1 && reference4 == 'ActionUI' && reference5 == 0{
+		_actionID = reference0 / 137
+
+		'\_q\u\![bind,アクション,,0]\h\_q'
+		--
+		case _actionID{
+			when 0{
+				Action_Fold
+			}
+			when 1{
+				if temp_maxBet == 0{
+					Action_Check
+				}
+				else{
+					Action_Call
+				}
+			}
+			when 2{
+				temp_ChoiseExRef = temp_smallBet
+				if temp_maxBet == 0{
+					Action_Bet
+				}
+				else{
+					Action_Raise
+				}
+			}
+			when 3{
+				temp_ChoiseExRef = temp_halfBet
+				if temp_maxBet == 0{
+					Action_Bet
+				}
+				else{
+					Action_Raise
+				}
+			}
+			when 4{
+				temp_ChoiseExRef = temp_bigBet
+				if temp_maxBet == 0{
+					Action_Bet
+				}
+				else{
+					Action_Raise
+				}
+			}
+			when 5{
+				Action_AllIn
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
 //OnMinuteChangeイベント
 //------------------------------------------------------------------------------
 

@@ -227,6 +227,26 @@ surface1100
 	animation50.pattern0,add,1050,0,0,0
 	animation51.interval,bind
 	animation51.pattern0,add,1051,0,0,0
+	animation70.interval,bind
+	animation70.pattern0,add,1110,0,1,433
+	animation71.interval,bind
+	animation71.pattern0,add,1111,0,138,433
+	animation72.interval,bind
+	animation72.pattern0,add,1112,0,275,433
+	animation73.interval,bind
+	animation73.pattern0,add,1113,0,412,433
+	animation74.interval,bind
+	animation74.pattern0,add,1114,0,549,433
+	animation75.interval,bind
+	animation75.pattern0,add,1115,0,686,433
+	animation76.interval,bind
+	animation76.pattern0,add,1116,0,138,433
+	animation77.interval,bind
+	animation77.pattern0,add,1117,0,275,433
+	animation78.interval,bind
+	animation78.pattern0,add,1118,0,412,433
+	animation79.interval,bind
+	animation79.pattern0,add,1119,0,549,433
 	animation80.interval,bind
 	animation80.pattern0,add,1099,0,290,165
 	animation81.interval,bind
@@ -257,4 +277,5 @@ surface1100
 	animation98.pattern0,add,1099,0,363,313
 	animation99.interval,bind
 	animation99.pattern0,add,1099,0,411,313
+	collision0,0,432,822,532,ActionUI
 }
